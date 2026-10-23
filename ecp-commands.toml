@@ -1,0 +1,8 @@
+# repo-guards mounts as `ecp guards`. The kit owns its own CLI (`guv`),
+# so the whole surface is delegated: `ecp guards <anything...>` goes to
+# guv's own parser, which owns the argument parsing.
+
+[passthrough]
+summary = "Repo governance: release gates, prose gates, and tag parity"
+argv = ["uv", "run", "guv"]
+requires = ["uv"]
