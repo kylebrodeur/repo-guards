@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the parity + version-class guards need tags + history
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: "latest"
+      - name: Install
+        run: uv sync --group dev
+      - name: Run the gates (this repo is guarded by itself)
+        run: |
+          if [ ! -f .repolice.toml ] && [ ! -f repolice.toml ]; then
+            echo "::warning::no .repolice.toml yet; guv check is skipped until the release wiring lands"
+            exit 0
+          fi
+          uv run guv check .
+      - name: Tests
+        run: uv run pytest tests -q
+      - name: Lint
+        run: uv run ruff check .
+
+  # The release-parity oracle is NOT wired here yet. It needs this repo's
+  # own .repolice.toml plus the release and workflow_dispatch triggers, and
+  # the action resolves the kit source relative to its own path
+  # ($GITHUB_ACTION_PATH/../..), so the action must be referenced from
+  # where that resolution holds. The composites ship in actions/ for
+  # consumers to vendor; see actions/example-workflow.yml for the
+  # supported wiring. Adding the release wiring is separate work.

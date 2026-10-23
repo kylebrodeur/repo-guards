@@ -1,0 +1,40 @@
+name: "Release parity"
+description: "The published-state oracle: the latest tag has a GitHub release with real notes + source notes + version parity. Run on release publish + dispatch; red = the tag went out incomplete."
+inputs:
+  config:
+    description: "Path to the repo-guards config"
+    required: false
+    default: ".repolice.toml"
+runs:
+  using: "composite"
+  steps:
+    - name: Resolve the kit source (vendored-first; every miss fails LOUD)
+      shell: bash
+      run: |
+        if [ -d "tools/repo-guards" ]; then
+          echo "kit source: vendored tools/repo-guards"
+          echo "KIT_DIR=tools/repo-guards" >> "$GITHUB_ENV"
+        elif [ -f "$GITHUB_ACTION_PATH/../../pyproject.toml" ]; then
+          echo "kit source: the vendored kit tree beside this action"
+          echo "KIT_DIR=$GITHUB_ACTION_PATH/../.." >> "$GITHUB_ENV"
+        elif [ -d "repo-guards" ]; then
+          echo "kit source: the kit checked out beside the workflow (monorepo shape)"
+          echo "KIT_DIR=repo-guards" >> "$GITHUB_ENV"
+        else
+          echo "::error::No kit source found. Deliver the kit by vendoring it" \
+               "(copy repo-guards/ into tools/repo-guards) — a private-kit" \
+               "reference from another repo needs an access token and is NOT" \
+               "the supported path (see the kit's README)."
+          exit 1
+        fi
+    - uses: astral-sh/setup-uv@v7
+      with:
+        version: "latest"
+    - name: Install the kit (uv-native)
+      shell: bash
+      run: uv tool install --from "$KIT_DIR" guv || uv tool install -e "$KIT_DIR"
+    - name: The parity oracle
+      shell: bash
+      run: guv check . --except version_class,prose,ci,lockfile_parity
+      env:
+        REPOLICE_CONFIG: ${{ inputs.config }}
