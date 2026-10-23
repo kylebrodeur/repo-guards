@@ -1,0 +1,34 @@
+# repo-guards
+
+> Config-driven repo-discipline guards: release parity, version-class,
+> lockfile parity, prose, CI-verbatim. Every trusted claim becomes an
+> exit code.
+
+The AI Engineering Control Plane (AI ECP) family: independent kit repos
+run by rules an agent can execute. Members:
+
+- [ecp-toolkit](https://github.com/kylebrodeur/ecp-toolkit): the `ecp`
+  control-plane CLI
+- [actions-runner](https://github.com/kylebrodeur/actions-runner): the
+  `arun` config-driven local agent-pipeline runner
+- [omp-rpc-cli](https://github.com/kylebrodeur/omp-rpc-cli): persistent
+  `omp` RPC sessions
+
+## Docs
+
+- [AGENTS.md](AGENTS.md): the boundary, stated as rules an agent obeys
+- [docs/quickstart.md](docs/quickstart.md): from nothing to a guarded
+  repo
+- [docs/how-to.md](docs/how-to.md): the tasks you repeat
+- [docs/RUNBOOK.md](docs/RUNBOOK.md): the full command surface, every
+  error string and its fix, and the recovery procedures
+- [CONTRIBUTING.md](CONTRIBUTING.md): setup, tests, and opening a change
+- [SECURITY.md](SECURITY.md): private vulnerability reporting
+- [skills/repo-guards/SKILL.md](skills/repo-guards/SKILL.md): the skill
+  for agents operating the gates
+- [LICENSE](LICENSE): Apache-2.0
+
+## Status
+
+Product grade, not yet published to a package registry; install from a
+checkout or a vendored copy. Facts checked 2026-10-22.
