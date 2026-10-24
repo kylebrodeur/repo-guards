@@ -12,7 +12,7 @@ The kit is not published to a package registry yet. From a checkout or
 a vendored copy:
 
 ```bash
-uv tool install --from /path/to/repo-guards repo-guards
+uv tool install --from "git+https://github.com/kylebrodeur/repo-guards@v0.1.3" repo-guards
 ```
 
 Or run it straight from a checkout without installing:

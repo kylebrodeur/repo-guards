@@ -14,7 +14,7 @@ The kit is not in a package registry yet. From a checkout or a vendored
 copy (facts checked 2026-10-22 against `uv` and `guv` 0.1.0):
 
 ```bash
-uv tool install --from <path-to-kit> repo-guards   # package name, not the script name
+uv tool install --from "git+https://github.com/kylebrodeur/repo-guards@v0.1.3" repo-guards   # package name, not the script name
 # or, editable (what the composite Actions use):
 uv tool install -e <path-to-kit>
 # or run without installing:
