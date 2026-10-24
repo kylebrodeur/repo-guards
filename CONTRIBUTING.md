@@ -75,7 +75,10 @@ uv run pytest tests -q
 uv run ruff check .
 ```
 
-Require every `repo-guards:` line to read PASS.
+Those commands print pytest and ruff output, not `repo-guards:` lines: the
+family harness that prints those lines is in the PRIVATE system repo and is
+maintainer-only. A public contributor runs the commands above, and the
+family harness runs on the maintainer's side.
 
 ## Security
 
