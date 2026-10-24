@@ -157,15 +157,15 @@ An informational note rides along but does not fail the gate:
 ## How do I keep release notes where I want them?
 
 `notes_dir` accepts an absolute path, so notes can live in a central
-docs home outside the repo (the central-notes-home pattern; a real
-example is [examples/modal-victoriametrics-server.repolice.toml](../examples/modal-victoriametrics-server.repolice.toml)):
+docs home outside the repo:
 
 ```toml
 notes_dir = "/absolute/path/to/docs/release/packages/<slug>"
 ```
 
 The guard searches `notes_dir` itself and one subdirectory per slug
-(candidate spellings derive from the repo name, with `notes_candidates`
+(candidate spellings derive from the repo name, with `repo_prefix` and
+`repo_suffix` peeled when the config sets them, and `notes_candidates`
 adding extras). `notes_glob` is the file pattern, default
 `RELEASE-NOTES-{tag}.md`.
 

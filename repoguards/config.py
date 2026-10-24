@@ -78,6 +78,12 @@ class Config:
     ci: tuple[str, ...] = ()
     squash: str | None = None  # None (default no-squash), "always", or never
     notes_candidates: tuple[str, ...] = ()  # extra slug spellings to find notes under
+    # The prefix and suffix a family's repo names carry, if any. A
+    # family whose repos are named "<prefix>-<core>-<suffix>" sets
+    # them, and the notes under a different spelling are then found.
+    # A family whose repos are named plainly sets neither.
+    repo_prefix: str = ""
+    repo_suffix: str = ""
 
     @classmethod
     def load(cls, repo: Path, path: Path | None = None) -> "Config":
@@ -117,6 +123,8 @@ class Config:
             ci=tuple(data.get("ci") or ()),
             squash=data.get("squash"),
             notes_candidates=tuple(data.get("notes_candidates") or ()),
+            repo_prefix=str(data.get("repo_prefix") or ""),
+            repo_suffix=str(data.get("repo_suffix") or ""),
         )
         return cfg
 

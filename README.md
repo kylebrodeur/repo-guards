@@ -91,9 +91,9 @@ the same config.
 
 `Config.load` resolves, in order: the `REPOLICE_CONFIG` env var (a
 missing env-named file is a clear error), then `.repolice.toml` /
-`repolice.toml` at the repo root. A real-world example (the
-central-notes-home pattern with an absolute path) is in
-[examples/](examples/).
+`repolice.toml` at the repo root. A runnable example is in
+[examples/demo-run.sh](examples/demo-run.sh): it creates a throwaway
+repo, runs the gates on it, and shows a red run and a green run.
 
 ## The skills
 
@@ -118,7 +118,7 @@ the family documentation standard (in the private control-plane repo).
 
 ## Origin
 
-Proven in the modal toolkit family's ops layer (guards born 2026-10-09
-through 2026-10-14, each after a real failure); generalized
-2026-10-15. The patterns' WHY: GUARD-PATTERNS-GENERAL.md (the parent
-workshop's index).
+Each guard was written after a real failure, and the guards have been
+running in production since 2026-10. The patterns' WHY, and the reasoning
+behind each one, are in the family's guard-patterns document, which is
+maintained with the family and is not part of this public repo.

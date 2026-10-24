@@ -79,6 +79,8 @@ refusing: /path/to/your-repo/.repolice.toml exists (--force to overwrite)
 | `ci` | `[]` (an empty list fails the gate) | the VERBATIM commands from `.github/workflows/ci.yml` |
 | `squash` | none (no-squash default) | `"always"` or `"never"` recorded for the release flow |
 | `notes_candidates` | `[]` | extra slug spellings the notes search tries |
+| `repo_prefix` | `""` | the prefix a family's repo names carry, if any (`""` for a family whose repos are named plainly) |
+| `repo_suffix` | `""` | the suffix a family's repo names carry, if any |
 
 Default `docs_paths`: `docs/`, `README.md`, `CONTRIBUTING.md`,
 `SECURITY.md`, `FUNDING.yml`, `SUPPORT.md`, `CODE_OF_CONDUCT.md`,
@@ -86,9 +88,9 @@ Default `docs_paths`: `docs/`, `README.md`, `CONTRIBUTING.md`,
 `.github/PULL_REQUEST_TEMPLATE.md`.
 
 The notes search: `notes_dir` itself, then one subdirectory per slug
-candidate (the repo name; the repo name with the `modal-` prefix and
-`-server` suffix peeled and re-composed; then `notes_candidates`
-extras).
+candidate (the repo name; the repo name with the `repo_prefix` and
+`repo_suffix` peeled and re-composed, when the config sets them; then
+`notes_candidates` extras).
 
 Config loading is exact:
 

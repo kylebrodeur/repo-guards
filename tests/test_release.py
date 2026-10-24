@@ -30,12 +30,36 @@ class TestNotesPath:
         assert release.notes_path(repo, cfg, "v9.9.9") is None
 
     def test_slug_candidates_shape(self, cfg: Config):
-        cands = release._slug_candidates(Config(owner="o", repo="modal-thing-server", notes_candidates=("t",)))
-        assert "modal-thing-server" in cands
+        # The prefix and the suffix are CONFIG. A family whose repos
+        # carry them sets them, and the notes under a different
+        # spelling are then found.
+        cands = release._slug_candidates(
+            Config(
+                owner="o",
+                repo="widget-thing-server",
+                notes_candidates=("t",),
+                repo_prefix="widget-",
+                repo_suffix="-server",
+            )
+        )
+        assert "widget-thing-server" in cands
         assert "thing-server" in cands
         assert "thing" in cands
-        assert "modal-thing" in cands
+        assert "widget-thing" in cands
         assert "t" in cands
+
+    def test_slug_candidates_without_a_prefix_or_suffix(self, cfg: Config):
+        # A family whose repos are named plainly sets neither, and the
+        # repo name is then the only candidate plus the extras. The
+        # prefix is not peeled from a name that does not carry it.
+        cands = release._slug_candidates(Config(owner="o", repo="plain-repo", notes_candidates=("t",)))
+        assert cands == ["plain-repo", "t"]
+
+    def test_slug_candidates_do_not_peel_an_unconfigured_prefix(self, cfg: Config):
+        # The naming convention is config, and not a hardcoded family's.
+        cands = release._slug_candidates(Config(owner="o", repo="widget-thing", notes_candidates=()))
+        assert "widget-thing" in cands
+        assert "thing" not in cands
 
 
 class TestRun:

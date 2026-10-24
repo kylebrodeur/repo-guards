@@ -35,16 +35,33 @@ def notes_path(repo: Path, cfg: Config, version: str) -> Path | None:
 
 
 def _slug_candidates(cfg: Config) -> list[str]:
-    """Slug spellings to try under notes_dir: the repo name, the stripped
-    core's spellings (prefix modal- and suffix -server peeled then
-    re-composed), then explicit extras."""
+    """Slug spellings to try under notes_dir: the repo name, then the
+    repo name with a configured prefix peeled and a configured suffix
+    peeled, re-composed both ways, then the explicit extras.
+
+    The prefix and the suffix are CONFIG, and not a hardcoded family's
+    naming convention. A family whose repos are named
+    ``<prefix>-<core>-<suffix>`` sets them; a family whose repos are
+    named plainly sets neither, and the repo name is the only
+    candidate.
+    """
     candidates = [cfg.repo]
-    core = cfg.repo.removeprefix("modal-").removesuffix("-server")
-    for prefix in ("modal-", ""):
-        for suffix in ("", "-server"):
+    core = cfg.repo
+    if cfg.repo_prefix:
+        core = core.removeprefix(cfg.repo_prefix)
+    if cfg.repo_suffix:
+        core = core.removesuffix(cfg.repo_suffix)
+    for prefix in (cfg.repo_prefix, ""):
+        for suffix in ("", cfg.repo_suffix):
+            if not prefix and not suffix:
+                continue
             candidate = f"{prefix}{core}{suffix}"
             if candidate not in candidates:
                 candidates.append(candidate)
+    # The fully peeled core, so a family whose notes live under the
+    # bare core are found too.
+    if core and core not in candidates:
+        candidates.append(core)
     extras = [c for c in cfg.notes_candidates if c not in candidates]
     return candidates + extras
 
