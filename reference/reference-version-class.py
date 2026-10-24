@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
-"""Release version-class guard (PRIVATE system tooling).
+"""Release version-class guard.
 
-Rule (Kyle, 2026-10-14): a release whose content changes are DOCS ONLY
-(guide copies synced from private sources, release notes, README wording,
-comments) must be a PATCH-level bump of the last released tag (e.g. v1.3.1
-after v1.3.0), and release-repo.sh must refuse a minor/major bump for it.
-Anything carrying code (toolkit/*.py, server/*, pyproject deps, tests,
-workflows) may bump minor or major.
+Rule: a release whose content changes are DOCS ONLY (guide copies synced
+from private sources, release notes, README wording, comments) must be a
+PATCH-level bump of the last released tag (e.g. v1.3.1 after v1.3.0), and
+the release script must refuse a minor/major bump for it. Anything
+carrying code (the package, the dependencies, the tests, the workflows)
+may bump minor or major.
 
-Usage: version-class.py <repo> <version>
+Usage: reference-version-class.py <repo> <version>
 Exit 0 when the requested version is legal for the pending changes,
 exit 1 with the reason otherwise. Run BEFORE the squash (the diff is
 origin/main..HEAD pre-squash, or the working tree when dirty).
+
+ADAPT BEFORE USE: DOC_PATHS below is this repo's own docs set. A consumer
+replaces it with its own.
 """
 
 from __future__ import annotations

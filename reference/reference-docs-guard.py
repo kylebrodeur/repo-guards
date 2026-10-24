@@ -20,8 +20,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-RUNTIME_SCOPE = ["apps/app/src", "backends/agent-runtime/app"]
-COPY_SCOPE = ["apps/app/src/copy", "apps/app/src/components", "apps/app/src/routes"]
+# The scope the checks run over. A consumer swaps these for its own
+# paths; they are set to the layout of the repo this reference was
+# written against, so adapt them before use.
+RUNTIME_SCOPE = ["src/runtime", "src/api"]
+COPY_SCOPE = ["src/copy", "src/components"]
 SKIP = re.compile(r"\.(test|stories)\.[jt]sx?$|/node_modules/|\.stories\.")
 
 
@@ -35,61 +38,67 @@ class Check:
     pattern: str | None = None
 
 
+# The EXAMPLE checks. They are here to show the SHAPE of a ruling
+# ledger: one row per ruling, each row naming where the ruling came
+# from and why it is a rule. The rulings themselves are this repo's
+# own; a consumer replaces them with its own.
 CHECKS = [
     Check(
-        "no /keep or /plan-purchase routes",
-        "decisions.md §34",
-        "Kyle: never add the /keep route back in; plan-purchase is scrubbed.",
+        "no retired route files",
+        "the routing decision",
+        "A retired route stays deleted. A file left behind is a route "
+        "somebody can still reach.",
         "absent",
-        ["apps/app/src/routes/keep*", "apps/app/src/routes/**/plan-purchase*"],
+        ["src/routes/retired*", "src/routes/**/legacy-*"],
     ),
     Check(
-        "no legacy plantnet/bioclip identify routes",
-        "decisions.md §37",
-        "Kyle: there is no /plantnet route; all identification goes through /identify. "
-        "Note: api/agent/identify.ts is the live gateway and is NOT on this list.",
+        "the live route is the only one",
+        "the routing decision",
+        "There is one entry point. The old names are gone, and the live "
+        "gateway is NOT on this list, because it is supposed to be there.",
         "absent",
-        ["apps/app/src/routes/api/identify/plantnet.ts", "apps/app/src/routes/api/identify/bioclip.ts"],
+        ["src/routes/api/retired.ts", "src/routes/api/legacy.ts"],
     ),
     Check(
-        "workflow discipline (no ad-hoc Actions; deploy-agent-runtime present)",
-        "AGENTS.md deploy law (Kyle 2026-10-16 correction)",
-        "No ad-hoc/random Actions workflows; the sanctioned runtime-deploy "
-        "workflow MUST exist (runtime deploys are cloud-only via WIF now).",
+        "the sanctioned deploy workflow exists",
+        "the deploy law",
+        "No ad-hoc workflows. The one sanctioned deploy workflow MUST "
+        "exist, so a deploy cannot quietly stop having a home.",
         "require",
-        [".github/workflows/deploy-agent-runtime.yml"],
+        [".github/workflows/deploy.yml"],
     ),
     Check(
-        "no @/lib/db imports in runtime code",
-        "LEARNINGS.md (auth, observability, dead code)",
-        "@/lib/db is inert; any runtime import is a defect.",
+        "no inert module imports in runtime code",
+        "the dead-code decision",
+        "The module is inert; any runtime import of it is a defect.",
         "forbid",
         RUNTIME_SCOPE,
-        r"from\s+['\"]@/lib/db['\"]",
+        r"from\s+['\"]@/lib/inert['\"]",
     ),
     Check(
-        "no Grok or xAI references in runtime code",
-        "decisions.md §33 (Kyle, 2026-09-16)",
-        "No Grok or xAI in the final product. Word boundaries avoid 'Vertex AI'.",
+        "no retired vendor references in runtime code",
+        "the vendor decision",
+        "The retired vendor is not in the product. Word boundaries keep "
+        "a similarly named vendor from matching.",
         "forbid",
         RUNTIME_SCOPE,
-        r"(?i)\b(grok|xai)\b|\bx\.ai\b|\bx ai\b",
+        r"(?i)\b(retiredvendor|othervendor)\b",
     ),
     Check(
-        "no 'hosted credit' wording in user copy",
-        "decisions.md §36 (Kyle, 2026-10-09)",
-        "Say 'Credits' or 'ID credits'. 'Hosted Credits' is retired.",
+        "no retired wording in user copy",
+        "the copy decision",
+        "Say the current name. The old one is retired.",
         "forbid",
         COPY_SCOPE,
-        r"(?i)hosted[ -]credit",
+        r"(?i)hosted[ -]credits?",
     ),
     Check(
-        "no cut tier names in user copy",
-        "decisions.md §35 (Kyle, 2026-10-11)",
-        "One Founder plan plus credit packs. Keep, Lifetime, and Founder Pro are cut.",
+        "no cut plan names in user copy",
+        "the pricing decision",
+        "One plan plus credit packs. The cut names are cut.",
         "forbid",
-        ["apps/app/src/copy"],
-        r"(?i)founder pro|lifetime plan|\bkeep plan\b",
+        ["src/copy"],
+        r"(?i)legacy plan|expired plan|\bold plan\b",
     ),
 ]
 
@@ -109,8 +118,8 @@ def run(check: Check) -> list[str]:
     """Evaluate one check.
 
     Kinds: ``absent`` (targets must not exist), ``require`` (targets must
-    exist — Kyle's 2026-10-16 workflow law), ``forbid`` (regex must not
-    appear inside the target scope).
+    exist, by the deploy law), ``forbid`` (regex must not appear inside
+    the target scope).
     """
     hits: list[str] = []
     if check.kind == "absent":
