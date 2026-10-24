@@ -1,0 +1,31 @@
+[project]
+name = "repo-guards"
+version = "0.1.1"
+description = "Config-driven repo-discipline guards: every trusted claim about a repo becomes an exit code. Five gates, a dry-by-default release flow, and composite GitHub Actions."
+requires-python = ">=3.11"
+dependencies = []  # stdlib only; gh + uv are invoked as CLIs
+
+[project.scripts]
+guv = "repoguards.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8.0", "ruff>=0.8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+only-include = ["repoguards"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "W"]
+
+[tool.ruff.lint.per-file-ignores]
+"reference/**" = ["ALL"]  # verbatim reference copies (md5 of the source)
