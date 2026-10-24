@@ -1,0 +1,51 @@
+# Example workflow wiring (copy to <repo>/.github/workflows/) — the delivery
+# models this kit supports in CI:
+#
+# DELIVERY MODEL (the only supported one): VENDOR the piece you use.
+#   - the kit:  copy repo-guards/ into <repo>/tools/repo-guards
+#   - the actions: copy actions/release-gates/ + actions/tag-parity/ into
+#     <repo>/.github/actions/ (or reference the vendored copies)
+#   Cross-repo `uses:` references are PRIVATE-repo-gated (a private repo
+#   cannot be checked out by Actions without an access token) — the kit ships the
+#   composites precisely so consumers copy them. This matches the anti-slop
+#   installer's vendored-not-dependency law.
+# Model stages of agentic pipelines stay LOCAL by design (private endpoints
+# + secrets); see actions-runner/SYSTEM.md for the local-run surface.
+
+name: Gates
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # the parity + version-class guards need tags + history
+      # THE REPO'S OWN CI (verbatim; edit per repo — the kit's `guv check`
+      # runs the same commands from the config's ci list locally too):
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: "latest"
+      - name: The repo's CI commands (uv-native, family-standard)
+        run: |
+          uv sync --project server --group dev   # the repo's real sync shape
+          uv run --project server pytest server/tests -q
+          uv run --project server ruff check server
+      # THE GATES (the vendored composite as a required check):
+      - uses: ./.github/actions/release-gates
+
+  parity:
+    # The published oracle: on a release (or dispatch after a re-point),
+    # the tag must have a real release + notes + version parity.
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/tag-parity
