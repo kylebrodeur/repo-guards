@@ -1,0 +1,40 @@
+name: "Release gates"
+description: "Run the repo-discipline gates (prose, version-class, lockfile-parity, CI-verbatim) on a pull request or push; red = the branch does not release."
+inputs:
+  config:
+    description: "Path to the repo-guards config (default .repolice.toml)"
+    required: false
+    default: ".repolice.toml"
+  python-version:
+    description: "Python for the kit"
+    required: false
+    default: "3.12"
+runs:
+  using: "composite"
+  steps:
+    - name: Resolve the kit source (vendored-first; every miss fails LOUD)
+      shell: bash
+      run: |
+        if [ -d "tools/repo-guards" ]; then
+          echo "kit source: vendored tools/repo-guards"
+          echo "KIT_DIR=tools/repo-guards" >> "$GITHUB_ENV"
+        elif [ -f "$GITHUB_ACTION_PATH/../../pyproject.toml" ]; then
+          echo "kit source: the vendored kit tree beside this action"
+          echo "KIT_DIR=$GITHUB_ACTION_PATH/../.." >> "$GITHUB_ENV"
+        else
+          echo "::error::No kit source found. Deliver the kit by vendoring it" \
+               "(copy repo-guards/ into tools/repo-guards) — a private-kit" \
+               "reference from another repo needs an access token and is NOT" \
+               "the supported path (see the kit's README)."
+          exit 1
+        fi
+    - uses: astral-sh/setup-uv@v7
+      with:
+        version: "latest"
+    - name: Install the kit (uv-native)
+      shell: bash
+      run: uv tool install --from "$KIT_DIR" guv || uv tool install -e "$KIT_DIR"
+    - name: Run the gates
+      shell: bash
+      run: |
+        guv check .
